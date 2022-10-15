@@ -6,3 +6,11 @@
 - **Primary author(s):** Louis Mullie [[@louism](https://github.com/louismullie)].
 - **Contributors:** None.
 - **License:** The code in this repository is released under the GNU General Public License, V3.
+
+### Publishing
+
+```
+python -m pip install --user --upgrade setuptools wheel
+python setup.py sdist bdist_wheel
+python -m twine upload dist/*
+```
