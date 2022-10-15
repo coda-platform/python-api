@@ -1,21 +1,29 @@
-import os
-import requests
-import json
+from coda_api import hub
+import pprint
 
-def get_access_token(creds):
+access_token = hub.get_access_token({
+  'username': 'louism',
+  'password': 'unsafeunsafe',
+  'client_id': 'test-user',
+  'client_secret': '77gm8WS9YjIiK8FdUupX6x6QMucuJSQd',
+  'grant_type': 'password'
     
-    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+})
 
-    auth_response = requests.post(os.environ['CODA_AUTH_SERVICE_TOKEN_ENDPOINT_URL'], data=creds,headers=headers)
-    return json.loads(auth_response.text)['access_token']
+query = {
+    "selectors": [{
+        "resource": "Patient","label":"Patient_0","filters":[],
+        "fields": [{"path":"age","label":"Patient_0_age","type":"integer"}]}
+    ],
+    "options": {
+        "measures": {"continuous": ["count","mean","stdev","ci95"],
+            "categorical": ["count","mode"]
+        }
+    }
+}
 
-def execute_query(service, action, sites, query, access_token):
-    
-    headers = {'Authorization': 'Bearer ' + access_token }
-    data_response = requests.get(os.environ['CODA_HUB_API_URL'] + 
-      '/' + service + '/' + action + '?sites=' + (','.join(sites)), 
-                                 json=query,headers=headers)
+sites = ['111']
+data = hub.execute_query('stats', 'summarize', sites, query, access_token)
 
-    data = json.loads(data_response.text)[1][0]['results']
-
-    return data
+pp = pprint.PrettyPrinter()
+pp.pprint(data)
