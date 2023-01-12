@@ -1,29 +1,31 @@
-from coda_api import hub
-import pprint
+import os
+import requests
+import numpy as np
+import json
 
-access_token = hub.get_access_token({
-  'username': 'louism',
-  'password': 'unsafeunsafe',
-  'client_id': 'test-user',
-  'client_secret': '77gm8WS9YjIiK8FdUupX6x6QMucuJSQd',
-  'grant_type': 'password'
+def get_access_token(creds):
     
-})
+    creds['client_id'] = os.environ['CODA_NOTEBOOK_APP_AUTH_CLIENT_ID']
+    creds['client_secret'] = os.environ['CODA_NOTEBOOK_APP_AUTH_CLIENT_SECRET']
+    creds['grant_type'] = 'password'
+    
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
-query = {
-    "selectors": [{
-        "resource": "Patient","label":"Patient_0","filters":[],
-        "fields": [{"path":"age","label":"Patient_0_age","type":"integer"}]}
-    ],
-    "options": {
-        "measures": {"continuous": ["count","mean","stdev","ci95"],
-            "categorical": ["count","mode"]
-        }
-    }
-}
+    auth_response = requests.post(os.environ['CODA_AUTH_SERVICE_URL'] + '/realms/' + os.environ['CODA_NOTEBOOK_APP_AUTH_REALM'] + '/protocol/openid-connect/token', data=creds,headers=headers)
+    return json.loads(auth_response.text)['access_token']
 
-sites = ['111']
-data = hub.execute_query('stats', 'summarize', sites, query, access_token)
+def execute_query(service, action, sites, query, access_token):
+    
+    headers = {'Authorization': 'Bearer ' + access_token }
+    data_response = requests.get(os.environ['CODA_HUB_API_URL'] + 
+      '/' + service + '/' + action + '?sites=' + (','.join(sites)), 
+                                 json=query,headers=headers)
 
-pp = pprint.PrettyPrinter()
-pp.pprint(data)
+    data = json.loads(data_response.text)
+
+    return data
+
+def get_measure(data, measure):
+    vals = np.asarray([[[z[measure] for z in x['results']] for x in y] for y in data]).flatten()
+    keys = np.asarray([[x['siteCode'] for x in y] for y in data]).flatten()
+    return dict(zip(keys,vals))
