@@ -8,5 +8,5 @@ setup(name='coda_api',
       license='GPL',
       py_modules=["coda_api"],
       packages=['coda_api'],
-      install_requires=[],
+      install_requires=['numpy', 'requests'],
       zip_safe=False)
