@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='coda_api',
-      version='0.3.4',
+      version='0.3.5',
       description='CODA platform API',
       url='https://github.com/coda-platform/python-api',
       author='Louis Mullie',
