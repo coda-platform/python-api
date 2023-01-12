@@ -39,9 +39,7 @@ def execute_query(service, action, sites, query, access_token):
 
     data = json.loads(data_response.text)
 
-    clean_dict(data, lambda x: x == "queries")
-    clean_dict(data, lambda x: x == "query")
-
+    clean_dict(data, lambda x: x == "queries" or x == "query")
     return data
 
 def get_measure(data, measure):
